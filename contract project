@@ -1,0 +1,49 @@
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.0;
+ 
+import "./interfaceproject.sol";
+ 
+contract ERC20 is IERC20{
+ 
+uint public override totalSupply; //this is the variable
+mapping(address => uint) public override balanceOf;
+mapping(address => mapping(address => uint)) public override allowance;//this is the nested mapping (mapping inside mapping)
+string public name ="tech4dev Token"; //name of token
+string public symbol ="TKD";//Symbol of token
+uint public decimals = 18;
+ 
+function transfer(address recipient, uint amount) external override returns(bool){
+balanceOf[msg.sender] -= amount; //method 1 is deducting the amount from sender's balance
+balanceOf[recipient] += amount; //adding amount to recipient's balance
+ //method 2
+emit Transfer(msg.sender, recipient, amount);//emit is helping us broadcast the event to the code
+return true;
+}
+ //to give approval to the sender inorder not to take all the money
+function approve(address spender, uint amount) external override returns(bool){
+allowance[msg.sender][spender] = amount;
+emit Approval(msg.sender, spender, amount);
+return true;
+}
+ //The sender will call this function
+function transferFrom(address sender, address recipient, uint amount) external override returns(bool){
+allowance[sender][msg.sender] -= amount; 
+balanceOf[sender] -= amount;
+balanceOf[recipient] += amount;
+emit Transfer(sender, recipient, amount);
+return true;
+}
+ 
+ //create more amount to the owner's balance
+ function mint(uint amount) external {
+     balanceOf[msg.sender] +=amount;
+     totalSupply += amount; //this increase the total supply
+     emit Transfer(address(0), msg.sender, amount);
+ }
+ //this burn function is the opposite of the mint function
+ function burn(uint amount) external {
+     balanceOf[msg.sender] -= amount; //decrease the total supply
+     totalSupply -= amount;
+     emit Transfer(msg.sender, address(0), amount);
+ }
+}
